@@ -1,0 +1,28 @@
+<section class="mx-auto flex min-h-[70dvh] w-full max-w-md items-center px-4 py-10">
+  <form class="painel w-full" [formGroup]="formulario" (ngSubmit)="enviar()">
+    <p class="text-sm text-gold">Bem-vindo de volta</p>
+    <h1 class="mt-2 font-display text-3xl text-gold">Entrar</h1>
+    <p class="mt-2 text-sm text-parchment/70">A partida em andamento continua. A pontuação pendente é gravada ao entrar.</p>
+
+    <label class="campo">
+      <span>E-mail</span>
+      <input type="email" formControlName="email" autocomplete="email" />
+    </label>
+    <label class="campo">
+      <span>Senha</span>
+      <input type="password" formControlName="senha" autocomplete="current-password" />
+    </label>
+
+    @if (erro()) {
+      <p class="text-sm text-alerta" role="alert">{{ erro() }}</p>
+    }
+
+    <button class="botao-ouro mt-2 w-full" type="submit" [disabled]="enviando()">
+      {{ enviando() ? 'Entrando...' : 'Entrar' }}
+    </button>
+    <p class="text-center text-sm text-parchment/70">
+      Ainda não tem conta?
+      <a class="text-gold" routerLink="/cadastro" [queryParams]="{ retorno: destino() }">Criar agora</a>
+    </p>
+  </form>
+</section>

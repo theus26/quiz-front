@@ -1,0 +1,8 @@
+<ol class="escada" aria-label="Pontos da partida">
+  @for (degrau of degraus(); track degrau.id) {
+    <li [class]="classe(degrau)" [attr.aria-current]="degrau.situacao === 'atual' ? 'step' : null">
+      <span class="escada-indice">{{ degrau.ordem }}</span>
+      <span class="escada-pontos">{{ degrau.pontos }}</span>
+    </li>
+  }
+</ol>

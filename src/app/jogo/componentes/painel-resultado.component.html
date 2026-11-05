@@ -1,0 +1,50 @@
+<div class="resultado-pano" role="dialog" aria-modal="true" aria-labelledby="titulo-resultado">
+  <section class="resultado surgir" [class.resultado-vitoria]="motivo() === 'vitoria'" [class.resultado-erro]="motivo() === 'erro'">
+    <p class="resultado-verso">{{ verso() }}</p>
+    <h2 id="titulo-resultado" class="font-display text-3xl text-gold sm:text-4xl">{{ titulo() }}</h2>
+    <p class="resultado-pontos">
+      <strong>{{ formatar(pontos()) }}</strong>
+      <span>pontos</span>
+    </p>
+    <p class="text-sm text-parchment/75">{{ acertos() }} {{ acertos() === 1 ? 'acerto' : 'acertos' }}</p>
+
+    @if (motivo() === 'erro' && respostaCerta()) {
+      <p class="resposta-final">A resposta era <strong>{{ respostaCerta() }}</strong></p>
+    }
+
+    <div class="salvamento" aria-live="polite">
+      @switch (salvamento()) {
+        @case ('salvando') {
+          <p>Registrando a partida...</p>
+        }
+        @case ('salvo') {
+          <p>Partida registrada no seu histórico.</p>
+        }
+        @case ('visitante') {
+          <p>Você jogou sem conta. Entre para gravar esta pontuação no ranking.</p>
+        }
+        @case ('falha') {
+          <p>{{ mensagemSalvar() }}</p>
+        }
+        @default {
+          @if (mensagemSalvar()) {
+            <p>{{ mensagemSalvar() }}</p>
+          }
+        }
+      }
+    </div>
+
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
+      @if (salvamento() === 'visitante') {
+        <a class="botao-ouro" routerLink="/entrar" [queryParams]="{ retorno: retorno() }">Entrar e salvar</a>
+        <a class="botao-fantasma" routerLink="/cadastro" [queryParams]="{ retorno: retorno() }">Criar conta</a>
+      }
+      @if (salvamento() === 'falha' && autenticado()) {
+        <button type="button" class="botao-ouro" (click)="tentarSalvar.emit()">Tentar salvar de novo</button>
+      }
+      <button type="button" class="botao-ouro" (click)="jogarDeNovo.emit()">Jogar de novo</button>
+      <a class="botao-fantasma" routerLink="/ranking">Ver ranking</a>
+      <a class="botao-fantasma" routerLink="/">Início</a>
+    </div>
+  </section>
+</div>

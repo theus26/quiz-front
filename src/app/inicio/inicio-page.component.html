@@ -1,0 +1,66 @@
+<section class="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-8 sm:py-14">
+  <header class="max-w-3xl">
+    <p class="text-sm text-gold">Quiz bíblico</p>
+    <h1 class="titulo-ouro mt-1 font-display text-4xl leading-tight sm:text-5xl">Milhão Bíblico</h1>
+    <p class="mt-4 max-w-2xl text-base text-parchment/80 sm:text-lg">
+      Uma pergunta de cada vez, uma alternativa. Fácil vale 5, média 10 e difícil 15.
+      Errou, a partida acaba e fica o que você já marcou.
+    </p>
+    @if (autenticado()) {
+      <p class="mt-4 text-sm text-gold">Paz, {{ nome() }}. Sua pontuação entra no ranking.</p>
+    } @else {
+      <p class="mt-4 text-sm text-parchment/70">
+        Dá para jogar sem conta. A pontuação só é registrada quando você entra com um usuário.
+      </p>
+    }
+  </header>
+
+  <div class="grid gap-4 md:grid-cols-3">
+    @for (jornada of jornadas; track jornada.filtro) {
+      <article class="jornada">
+        <p class="text-sm text-gold/80">{{ jornada.detalhe }}</p>
+        <h2 class="mt-2 font-display text-2xl text-parchment">{{ jornada.titulo }}</h2>
+        <p class="mt-2 flex-1 text-sm text-parchment/75">{{ jornada.texto }}</p>
+        <button type="button" class="botao-ouro mt-5" (click)="jogar(jornada.filtro)">
+          Jogar
+        </button>
+      </article>
+    }
+  </div>
+
+  <section class="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+    <article class="painel">
+      <h2 class="font-display text-2xl text-gold">Como se joga</h2>
+      <ol class="mt-4 grid gap-3 sm:grid-cols-2">
+        <li class="passo"><span>1</span> Escolha uma alternativa e confirme. O servidor diz se está certa.</li>
+        <li class="passo"><span>2</span> Acertou, segue e soma os pontos. Errou, a partida encerra com o que você já fez.</li>
+        <li class="passo"><span>3</span> Três pulos, só nesta tela. Pular troca a pergunta e não conta acerto.</li>
+        <li class="passo"><span>4</span> Duas ajudas, uma vez cada: a referência bíblica e a resposta certa.</li>
+      </ol>
+    </article>
+
+    <article class="painel">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="font-display text-2xl text-gold">Ranking</h2>
+        <a routerLink="/ranking" class="text-sm text-gold underline-offset-4 hover:underline">Ver tudo</a>
+      </div>
+      @if (carregandoRanking()) {
+        <p class="mt-4 text-sm text-parchment/60">Buscando as maiores pontuações...</p>
+      } @else if (erroRanking()) {
+        <p class="mt-4 text-sm text-alerta">{{ erroRanking() }}</p>
+      } @else if (ranking().length === 0) {
+        <p class="mt-4 text-sm text-parchment/70">Ainda não há pontuação registrada.</p>
+      } @else {
+        <ol class="mt-4 flex flex-col gap-2">
+          @for (item of ranking(); track item.usuarioId) {
+            <li class="ranking-linha">
+              <span class="ranking-posicao">{{ item.posicao }}</span>
+              <span class="truncate">{{ item.nome }}</span>
+              <span class="text-gold">{{ formatar(item.pontos) }}</span>
+            </li>
+          }
+        </ol>
+      }
+    </article>
+  </section>
+</section>

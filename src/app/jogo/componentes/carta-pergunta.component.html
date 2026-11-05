@@ -1,0 +1,42 @@
+<article
+  class="carta surgir"
+  [class.brilhar]="fase() === 'acerto'"
+  [class.tremer]="fase() === 'erro'">
+  <header class="carta-topo">
+    <span class="selo">{{ rotuloNivel[pergunta().nivel] }}</span>
+    <p class="carta-valendo">Vale <strong>{{ formatar(premio()) }}</strong> pontos</p>
+    <span class="carta-passo">Pergunta {{ passo() }}</span>
+  </header>
+
+  <h2 class="enunciado">{{ pergunta().enunciado }}</h2>
+
+  @if (referenciaVisivel()) {
+    <p class="referencia surgir" role="status">
+      {{ pergunta().referencia || 'Esta pergunta não tem referência cadastrada.' }}
+    </p>
+  }
+
+  <div class="alternativas" [class.travada]="travado()">
+    @for (alternativa of pergunta().alternativas; track alternativa.id; let indice = $index) {
+      <button
+        type="button"
+        class="alternativa"
+        [class.escolhida]="selecionadaId() === alternativa.id"
+        [class.revelada]="reveladaId() === alternativa.id && fase() === 'pergunta'"
+        [class.certa]="ehCerta(alternativa.id)"
+        [class.errada]="fase() === 'erro' && erradaId() === alternativa.id"
+        [attr.aria-pressed]="selecionadaId() === alternativa.id"
+        (click)="escolher(alternativa.id)">
+        <span class="letra">{{ letra(indice) }}</span>
+        <span class="texto-alternativa">{{ alternativa.texto }}</span>
+        @if (reveladaId() === alternativa.id && (fase() === 'pergunta' || fase() === 'erro')) {
+          <span class="marca-resposta">Resposta</span>
+        }
+      </button>
+    }
+  </div>
+
+  @if (fase() === 'acerto') {
+    <div class="particulas" aria-hidden="true"></div>
+  }
+</article>

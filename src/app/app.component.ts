@@ -1,0 +1,43 @@
+import { ChangeDetectionStrategy, Component, effect, inject, untracked } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { BoasVindasService } from './core/auth/boas-vindas.service';
+import { SessaoStore } from './core/auth/sessao.store';
+import { JogoService } from './jogo/servicos/jogo.service';
+
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './app.component.html',
+})
+export class AppComponent {
+  private readonly sessao = inject(SessaoStore);
+  private readonly jogo = inject(JogoService);
+  private readonly router = inject(Router);
+  private readonly aviso = inject(BoasVindasService);
+
+  readonly autenticado = this.sessao.autenticado;
+  readonly nome = this.sessao.nome;
+  readonly boasVindas = this.aviso.mensagem;
+
+  constructor() {
+    effect(() => {
+      if (!this.sessao.autenticado()) {
+        return;
+      }
+      untracked(() => {
+        void this.jogo.salvarPendente();
+      });
+    });
+  }
+
+  sair(): void {
+    this.aviso.fechar();
+    this.sessao.definir(null);
+    void this.router.navigateByUrl('/');
+  }
+
+  fecharBoasVindas(): void {
+    this.aviso.fechar();
+  }
+}

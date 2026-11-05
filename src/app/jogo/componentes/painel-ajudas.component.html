@@ -1,0 +1,40 @@
+<div class="ajudas" role="group" aria-label="Ajudas da partida">
+  <button
+    type="button"
+    class="ajuda"
+    [class.ajuda-gasta]="pulos() <= 0"
+    [disabled]="travado() || pulos() <= 0"
+    (click)="pedirPulo()">
+    <span class="ajuda-icone" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M5 12h11M13 6l6 6-6 6" /></svg>
+    </span>
+    <span class="ajuda-nome">Pular</span>
+    <span class="ajuda-resto">{{ pulos() }}</span>
+  </button>
+
+  <button
+    type="button"
+    class="ajuda"
+    [class.ajuda-gasta]="!referenciaDisponivel()"
+    [disabled]="travado() || !referenciaDisponivel()"
+    (click)="pedirReferencia()">
+    <span class="ajuda-icone" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M5 4.5h9.5A3.5 3.5 0 0 1 18 8v12H8.5A3.5 3.5 0 0 0 5 16.5zM5 4.5A3.5 3.5 0 0 1 8.5 8H18" /></svg>
+    </span>
+    <span class="ajuda-nome">Referência</span>
+    <span class="ajuda-resto">{{ referenciaDisponivel() ? '1' : '0' }}</span>
+  </button>
+
+  <button
+    type="button"
+    class="ajuda"
+    [class.ajuda-gasta]="!revelacaoDisponivel()"
+    [disabled]="travado() || !revelacaoDisponivel()"
+    (click)="pedirRevelacao()">
+    <span class="ajuda-icone" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 3.5l1.6 4.8L18.5 10 13.6 11.7 12 16.5 10.4 11.7 5.5 10l4.9-1.7zM18 15.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" /></svg>
+    </span>
+    <span class="ajuda-nome">Revelar</span>
+    <span class="ajuda-resto">{{ revelacaoDisponivel() ? '1' : '0' }}</span>
+  </button>
+</div>

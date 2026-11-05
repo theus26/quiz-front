@@ -1,0 +1,137 @@
+<section class="mx-auto w-full max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
+  @if (estado(); as jogo) {
+    @if (jogo.fase === 'carregando') {
+      <div class="carregando" role="status">
+        <span class="lampada" aria-hidden="true"></span>
+        <p class="font-display text-xl text-gold">Abrindo as Escrituras</p>
+        <p class="text-sm text-parchment/70">Separando as perguntas.</p>
+      </div>
+    }
+
+    @if (jogo.fase === 'ociosa' && jogo.erro) {
+      <div class="painel-centro">
+        <h1 class="font-display text-3xl text-gold">A jornada não começou</h1>
+        <p class="mt-3 text-parchment/80">{{ jogo.erro }}</p>
+        <a class="botao-ouro mt-6" routerLink="/">Escolher de novo</a>
+      </div>
+    }
+
+    @if (emPergunta()) {
+      @if (jogo.atual; as pergunta) {
+      <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p class="text-xs uppercase tracking-[0.22em] text-gold/80">
+            {{ jogo.filtro ? rotuloFiltro[jogo.filtro] : 'Quiz' }}
+          </p>
+          <p class="font-display text-2xl text-parchment sm:text-3xl" aria-live="polite">
+            {{ formatar(jogo.pontos) }} pontos
+          </p>
+          <p class="text-sm text-parchment/70">
+            Esta pergunta vale {{ pontosDoNivel(pergunta.nivel) }}
+          </p>
+        </div>
+        <button type="button" class="botao-fantasma lg:hidden" (click)="escadaAberta.set(true)">
+          Ver escada
+        </button>
+      </div>
+
+      <div class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_240px]">
+        <div class="flex flex-col gap-4">
+          <app-painel-ajudas
+            [pulos]="jogo.pulosRestantes"
+            [referenciaDisponivel]="jogo.referenciaDisponivel"
+            [revelacaoDisponivel]="jogo.revelacaoDisponivel"
+            [travado]="travado()"
+            (pular)="pular()"
+            (referencia)="referencia()"
+            (revelar)="revelar()" />
+
+          @for (carta of [pergunta]; track carta.id) {
+            <app-carta-pergunta
+              [pergunta]="carta"
+              [fase]="jogo.fase"
+              [premio]="pontosDoNivel(pergunta.nivel)"
+              [passo]="jogo.acertos + 1"
+              [selecionadaId]="jogo.selecionadaId"
+              [reveladaId]="jogo.alternativaReveladaId"
+              [erradaId]="jogo.alternativaErradaId"
+              [referenciaVisivel]="jogo.referenciaVisivel"
+              [travado]="travado()"
+              (selecionar)="selecionar($event)" />
+          }
+
+          @if (jogo.consultando || jogo.fase === 'conferindo') {
+            <p class="text-center text-sm text-gold" role="status">Consultando as Escrituras...</p>
+          }
+          @if (jogo.erro) {
+            <p class="text-center text-sm text-alerta" role="alert">{{ jogo.erro }}</p>
+          }
+
+          <div class="flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              class="botao-ouro flex-1"
+              [disabled]="travado() || jogo.selecionadaId === null"
+              (click)="confirmar()">
+              Confirmar resposta
+            </button>
+            @if (jogo.acertos > 0) {
+              <button type="button" class="botao-fantasma" [disabled]="travado()" (click)="pedirParada()">
+                Parar com {{ formatar(jogo.pontos) }} pontos
+              </button>
+            } @else {
+              <button type="button" class="botao-fantasma" [disabled]="travado()" (click)="desistir()">
+                Desistir
+              </button>
+            }
+          </div>
+        </div>
+
+        <aside class="hidden lg:block">
+          <app-escada-premios [degraus]="trilha()" />
+        </aside>
+      </div>
+      }
+    }
+
+    @if (emPergunta() && escadaAberta()) {
+      <div class="sheet" (click)="escadaAberta.set(false)">
+        <div class="sheet-card" (click)="$event.stopPropagation()" role="dialog" aria-label="Pontos da partida">
+          <app-escada-premios [degraus]="trilha()" />
+          <button type="button" class="botao-fantasma mt-4 w-full" (click)="escadaAberta.set(false)">Fechar</button>
+        </div>
+      </div>
+    }
+
+    @if (emPergunta() && confirmarParada()) {
+      <div class="sheet" (click)="confirmarParada.set(false)">
+        <div class="sheet-card max-w-md text-center" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="titulo-parar">
+          <h2 id="titulo-parar" class="font-display text-2xl text-gold">Parar agora?</h2>
+          <p class="mt-3 text-parchment/80">
+            Se parar agora, você fica com {{ formatar(jogo.pontos) }} pontos e a partida termina.
+          </p>
+          <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <button type="button" class="botao-ouro" (click)="confirmarPremio()">Ficar com os pontos</button>
+            <button type="button" class="botao-fantasma" (click)="confirmarParada.set(false)">Continuar</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (jogo.fase === 'resultado') {
+      @if (jogo.motivo; as motivo) {
+      <app-painel-resultado
+        [motivo]="motivo"
+        [acertos]="jogo.acertos"
+        [pontos]="jogo.pontosLevar"
+        [respostaCerta]="respostaCerta()"
+        [salvamento]="jogo.salvamento"
+        [mensagemSalvar]="jogo.mensagemSalvar"
+        [autenticado]="autenticado()"
+        [retorno]="urlAtual()"
+        (jogarDeNovo)="jogarDeNovo()"
+        (tentarSalvar)="tentarSalvar()" />
+      }
+    }
+  }
+</section>

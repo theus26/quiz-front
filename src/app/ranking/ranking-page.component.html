@@ -1,0 +1,23 @@
+<section class="mx-auto w-full max-w-3xl px-4 py-8 sm:py-12">
+  <p class="text-sm text-gold">Maiores pontuações</p>
+  <h1 class="mt-2 font-display text-4xl text-gold">Ranking</h1>
+  <p class="mt-2 text-sm text-parchment/70">A melhor pontuação de cada jogador.</p>
+
+  @if (carregando()) {
+    <p class="mt-8 text-parchment/70" role="status">Abrindo o livro dos nomes...</p>
+  } @else if (erro()) {
+    <p class="mt-8 text-alerta" role="alert">{{ erro() }}</p>
+  } @else if (ranking().length === 0) {
+    <p class="mt-8 text-parchment/75">Ninguém registrou uma partida ainda.</p>
+  } @else {
+    <ol class="mt-8 flex flex-col gap-2">
+      @for (item of ranking(); track item.usuarioId) {
+        <li class="ranking-card" [class.ranking-ouro]="item.posicao === 1" [class.ranking-prata]="item.posicao === 2" [class.ranking-bronze]="item.posicao === 3">
+          <span class="ranking-posicao">{{ item.posicao }}</span>
+          <span class="truncate font-medium">{{ item.nome }}</span>
+          <span class="text-gold">{{ formatar(item.pontos) }}</span>
+        </li>
+      }
+    </ol>
+  }
+</section>
