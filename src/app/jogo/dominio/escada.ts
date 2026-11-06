@@ -1,6 +1,16 @@
-import { Nivel, Pergunta } from '../../core/modelos/quiz.modelos';
+import { Modalidade, Nivel, Pergunta } from '../../core/modelos/quiz.modelos';
 
 export const PULOS_INICIAIS = 3;
+
+export function regrasDaModalidade(modalidade: Modalidade): { pulos: number; revelacao: boolean } {
+  if (modalidade === 'RAPIDO') {
+    return { pulos: 1, revelacao: false };
+  }
+  if (modalidade === 'NIVEL') {
+    return { pulos: 2, revelacao: true };
+  }
+  return { pulos: 3, revelacao: true };
+}
 
 export const PONTOS_POR_NIVEL: Record<Nivel, number> = {
   FACIL: 5,

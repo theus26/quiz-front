@@ -1,14 +1,15 @@
 <section class="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-8 sm:py-14">
   <header class="max-w-3xl">
     <p class="text-sm text-gold">Quiz bíblico</p>
-    <h1 class="titulo-ouro mt-1 font-display text-4xl leading-tight sm:text-5xl">Milhão Bíblico</h1>
+    @if (nome(); as nome) {
+      <p class="saudacao">Olá, {{ nome }}! Seja bem-vindo de volta!</p>
+    }
+    <h1 class="titulo-ouro mt-1 font-display text-4xl leading-tight sm:text-5xl">Bereia</h1>
     <p class="mt-4 max-w-2xl text-base text-parchment/80 sm:text-lg">
-      Uma pergunta de cada vez, uma alternativa. Fácil vale 5, média 10 e difícil 15.
+      Examine as Escrituras, uma pergunta de cada vez. Fácil vale 5, média 10 e difícil 15.
       Errou, a partida acaba e fica o que você já marcou.
     </p>
-    @if (autenticado()) {
-      <p class="mt-4 text-sm text-gold">Paz, {{ nome() }}. Sua pontuação entra no ranking.</p>
-    } @else {
+    @if (!autenticado()) {
       <p class="mt-4 text-sm text-parchment/70">
         Dá para jogar sem conta. A pontuação só é registrada quando você entra com um usuário.
       </p>
@@ -32,10 +33,10 @@
     <article class="painel">
       <h2 class="font-display text-2xl text-gold">Como se joga</h2>
       <ol class="mt-4 grid gap-3 sm:grid-cols-2">
-        <li class="passo"><span>1</span> Escolha uma alternativa e confirme. O servidor diz se está certa.</li>
-        <li class="passo"><span>2</span> Acertou, segue e soma os pontos. Errou, a partida encerra com o que você já fez.</li>
-        <li class="passo"><span>3</span> Três pulos, só nesta tela. Pular troca a pergunta e não conta acerto.</li>
-        <li class="passo"><span>4</span> Duas ajudas, uma vez cada: a referência bíblica e a resposta certa.</li>
+        <li class="passo"><span>1</span> Escolha a jornada e, em seguida, a modalidade. A partida só começa depois disso.</li>
+        <li class="passo"><span>2</span> Confirme uma alternativa. O servidor decide se está certa e calcula os pontos.</li>
+        <li class="passo"><span>3</span> Acertou, segue. Errou, a partida encerra com o que você já fez.</li>
+        <li class="passo"><span>4</span> Pulos, referência e revelar dependem da modalidade escolhida.</li>
       </ol>
     </article>
 
@@ -45,7 +46,7 @@
         <a routerLink="/ranking" class="text-sm text-gold underline-offset-4 hover:underline">Ver tudo</a>
       </div>
       @if (carregandoRanking()) {
-        <p class="mt-4 text-sm text-parchment/60">Buscando as maiores pontuações...</p>
+        <p class="mt-4 text-sm text-parchment/60">Buscando a classificação...</p>
       } @else if (erroRanking()) {
         <p class="mt-4 text-sm text-alerta">{{ erroRanking() }}</p>
       } @else if (ranking().length === 0) {
@@ -64,3 +65,52 @@
     </article>
   </section>
 </section>
+
+@if (modalAberto()) {
+  <div class="sheet" (click)="fecharModal()">
+    <div
+      class="sheet-card modo-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="titulo-modo"
+      (click)="$event.stopPropagation()">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="text-sm text-gold">{{ jornadaEscolhida() ? rotuloFiltro[jornadaEscolhida()!] : '' }}</p>
+          <h2 id="titulo-modo" class="mt-1 font-display text-2xl text-parchment">
+            {{ etapa() === 'modo' ? 'Como você quer jogar?' : 'Qual dificuldade?' }}
+          </h2>
+        </div>
+        <button type="button" class="botao-fantasma botao-compacto" (click)="fecharModal()">Fechar</button>
+      </div>
+
+      @if (etapa() === 'modo') {
+        <div class="modo-grade">
+          @for (modo of modos; track modo.id) {
+            <button type="button" class="modo-card" (click)="escolherModo(modo.id)">
+              <span class="text-sm text-gold/80">{{ modo.detalhe }}</span>
+              <strong class="mt-1 font-display text-xl text-parchment">{{ modo.titulo }}</strong>
+              <span class="mt-2 text-sm text-parchment/75">{{ modo.texto }}</span>
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="modo-grade">
+          @for (nivel of niveis; track nivel) {
+            <button type="button" class="modo-card" (click)="escolherNivel(nivel)">
+              <strong class="font-display text-xl text-parchment">{{ rotuloNivel[nivel] }}</strong>
+              <span class="mt-2 text-sm text-parchment/75">
+                @if (nivel === 'DIFICIL') {
+                  Seis perguntas difíceis.
+                } @else {
+                  Oito perguntas deste nível.
+                }
+              </span>
+            </button>
+          }
+        </div>
+        <button type="button" class="botao-fantasma mt-4" (click)="voltarModos()">Voltar às modalidades</button>
+      }
+    </div>
+  </div>
+}

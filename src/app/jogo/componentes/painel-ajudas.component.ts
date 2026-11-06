@@ -9,6 +9,7 @@ export class PainelAjudasComponent {
   readonly pulos = input.required<number>();
   readonly referenciaDisponivel = input.required<boolean>();
   readonly revelacaoDisponivel = input.required<boolean>();
+  readonly mostrarRevelacao = input(true);
   readonly travado = input(false);
 
   readonly pular = output<void>();

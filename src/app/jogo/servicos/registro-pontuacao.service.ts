@@ -5,10 +5,11 @@ import { CriarPontuacao } from '../../core/modelos/quiz.modelos';
 import { PontuacaoGateway } from '../../core/portas/pontuacao.gateway';
 import { SessaoStore } from '../../core/auth/sessao.store';
 
-const CHAVE = 'milhao.pendente';
+const CHAVE = 'bereia.pendente';
+const CHAVE_ANTIGA = 'milhao.pendente';
 
 export type ResultadoRegistro =
-  | { readonly status: 'salvo' }
+  | { readonly status: 'salvo'; readonly pontos: number }
   | { readonly status: 'visitante' }
   | { readonly status: 'falha'; readonly mensagem: string };
 
@@ -39,9 +40,9 @@ export class RegistroPontuacaoService {
 
   private async enviar(dados: CriarPontuacao): Promise<ResultadoRegistro> {
     try {
-      await firstValueFrom(this.pontuacoes.registrar(dados));
+      const salva = await firstValueFrom(this.pontuacoes.registrar(dados));
       limparPendente();
-      return { status: 'salvo' };
+      return { status: 'salvo', pontos: salva.pontos };
     } catch (erro) {
       gravarPendente(dados);
       return {
@@ -57,13 +58,16 @@ function gravarPendente(dados: CriarPontuacao): void {
 }
 
 function lerPendente(): CriarPontuacao | null {
-  const bruto = memoria()?.getItem(CHAVE);
+  const armazenamento = memoria();
+  armazenamento?.removeItem(CHAVE_ANTIGA);
+  const bruto = armazenamento?.getItem(CHAVE);
   if (!bruto) {
     return null;
   }
   try {
     const dados = JSON.parse(bruto) as CriarPontuacao;
-    if (!dados?.filtroTestamento || !Array.isArray(dados.perguntaIds)) {
+    if (!dados?.rodadaToken || !dados.resultado) {
+      armazenamento?.removeItem(CHAVE);
       return null;
     }
     return dados;
@@ -73,7 +77,9 @@ function lerPendente(): CriarPontuacao | null {
 }
 
 function limparPendente(): void {
-  memoria()?.removeItem(CHAVE);
+  const armazenamento = memoria();
+  armazenamento?.removeItem(CHAVE);
+  armazenamento?.removeItem(CHAVE_ANTIGA);
 }
 
 function memoria(): Storage | null {

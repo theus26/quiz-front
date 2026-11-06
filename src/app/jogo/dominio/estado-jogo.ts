@@ -1,4 +1,4 @@
-import { FiltroTestamento, Pergunta } from '../../core/modelos/quiz.modelos';
+import { FiltroTestamento, Modalidade, Nivel, Pergunta } from '../../core/modelos/quiz.modelos';
 import { AcertoRegistrado, PULOS_INICIAIS } from './escada';
 
 export type FaseJogo =
@@ -17,7 +17,11 @@ export type Salvamento = 'idle' | 'salvando' | 'salvo' | 'visitante' | 'falha';
 export interface EstadoJogo {
   readonly fase: FaseJogo;
   readonly filtro: FiltroTestamento | null;
+  readonly modalidade: Modalidade | null;
+  readonly nivel: Nivel | null;
   readonly rodada: string | null;
+  readonly rodadaToken: string | null;
+  readonly revelacaoPermitida: boolean;
   readonly proximas: readonly Pergunta[];
   readonly atual: Pergunta | null;
   readonly acertos: number;
@@ -43,7 +47,11 @@ export function estadoInicial(): EstadoJogo {
   return {
     fase: 'ociosa',
     filtro: null,
+    modalidade: null,
+    nivel: null,
     rodada: null,
+    rodadaToken: null,
+    revelacaoPermitida: true,
     proximas: [],
     atual: null,
     acertos: 0,

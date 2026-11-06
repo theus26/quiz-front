@@ -2,10 +2,10 @@ import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { mensagemErro } from '../../core/api/mensagem-erro';
 import { SessaoStore } from '../../core/auth/sessao.store';
-import { FiltroTestamento, Pergunta } from '../../core/modelos/quiz.modelos';
+import { FiltroTestamento, Modalidade, Nivel, Pergunta, ResultadoPartida } from '../../core/modelos/quiz.modelos';
 import { PerguntaGateway } from '../../core/portas/pergunta.gateway';
 import { EstadoJogo, MotivoFim, estadoInicial } from '../dominio/estado-jogo';
-import { ordenarParaEscada, pontosDoNivel } from '../dominio/escada';
+import { ordenarParaEscada, pontosDoNivel, regrasDaModalidade } from '../dominio/escada';
 import { RegistroPontuacaoService, ResultadoRegistro } from './registro-pontuacao.service';
 
 @Injectable({ providedIn: 'root' })
@@ -21,13 +21,34 @@ export class JogoService {
 
   readonly estado = this.estadoInterno.asReadonly();
 
-  async iniciar(filtro: FiltroTestamento, rodada: string | null = null): Promise<void> {
+  async iniciar(
+    filtro: FiltroTestamento,
+    modalidade: Modalidade,
+    nivel: Nivel | null,
+    rodada: string | null = null,
+  ): Promise<void> {
     const jogada = ++this.jogada;
     this.encerrando = false;
-    this.estadoInterno.set({ ...estadoInicial(), fase: 'carregando', filtro, rodada });
+    const regras = regrasDaModalidade(modalidade);
+    this.estadoInterno.set({
+      ...estadoInicial(),
+      fase: 'carregando',
+      filtro,
+      modalidade,
+      nivel,
+      rodada,
+      pulosRestantes: regras.pulos,
+      revelacaoDisponivel: regras.revelacao,
+      revelacaoPermitida: regras.revelacao,
+    });
 
     try {
-      const perguntas = ordenarParaEscada(await firstValueFrom(this.perguntas.listar(filtro)));
+      const partida = await firstValueFrom(this.perguntas.abrir({
+        filtroTestamento: filtro,
+        modalidade,
+        nivel: modalidade === 'NIVEL' ? nivel : null,
+      }));
+      const perguntas = ordenarParaEscada(partida.perguntas);
       if (jogada !== this.jogada) {
         return;
       }
@@ -41,6 +62,7 @@ export class JogoService {
         fase: 'pergunta',
         atual,
         proximas: perguntas.slice(1),
+        rodadaToken: partida.token,
         erro: null,
       }));
     } catch (erro) {
@@ -72,7 +94,11 @@ export class JogoService {
     this.estadoInterno.update((atual) => ({ ...atual, fase: 'conferindo', erro: null }));
 
     try {
-      const correta = await firstValueFrom(this.perguntas.conferir(pergunta.id, alternativaId));
+      const token = this.estadoInterno().rodadaToken;
+      if (!token) {
+        throw new Error('A partida não foi aberta.');
+      }
+      const correta = await firstValueFrom(this.perguntas.conferir(pergunta.id, alternativaId, token));
       if (jogada !== this.jogada) {
         return;
       }
@@ -136,9 +162,13 @@ export class JogoService {
     }
 
     const jogada = this.jogada;
+    const token = estado.rodadaToken;
+    if (!token) {
+      return;
+    }
     this.estadoInterno.update((atual) => ({ ...atual, consultando: true, erro: null }));
     try {
-      const alternativa = await firstValueFrom(this.perguntas.revelarCorreta(pergunta.id));
+      const alternativa = await firstValueFrom(this.perguntas.revelarCorreta(pergunta.id, token));
       if (jogada !== this.jogada) {
         return;
       }
@@ -230,9 +260,10 @@ export class JogoService {
 
   private async encerrarErro(pergunta: Pergunta, alternativaId: number, jogada: number): Promise<void> {
     let corretaId = this.estadoInterno().alternativaReveladaId;
-    if (corretaId == null) {
+    const token = this.estadoInterno().rodadaToken;
+    if (corretaId == null && this.estadoInterno().revelacaoPermitida && token) {
       try {
-        const alternativa = await firstValueFrom(this.perguntas.revelarCorreta(pergunta.id));
+        const alternativa = await firstValueFrom(this.perguntas.revelarCorreta(pergunta.id, token));
         corretaId = alternativa.id;
       } catch {
         corretaId = null;
@@ -270,7 +301,9 @@ export class JogoService {
     }
     this.encerrando = true;
     const jogada = this.jogada;
-    const filtro = this.estadoInterno().filtro;
+    const estadoAtual = this.estadoInterno();
+    const filtro = estadoAtual.filtro;
+    const token = estadoAtual.rodadaToken;
     this.estadoInterno.update((estado) => ({
       ...estado,
       fase: 'resultado',
@@ -284,7 +317,7 @@ export class JogoService {
       erro: null,
     }));
 
-    if (!filtro || perguntaIds.length === 0) {
+    if (!filtro || !token || perguntaIds.length === 0) {
       this.estadoInterno.update((estado) => ({
         ...estado,
         salvamento: 'idle',
@@ -294,10 +327,8 @@ export class JogoService {
     }
 
     const resultado = await this.registro.registrar({
-      filtroTestamento: filtro,
-      acertos,
-      pontos,
-      perguntaIds,
+      rodadaToken: token,
+      resultado: resultadoApi(motivo),
     });
     if (jogada !== this.jogada || this.estadoInterno().fase !== 'resultado') {
       return;
@@ -307,7 +338,12 @@ export class JogoService {
 
   private aplicarRegistro(resultado: ResultadoRegistro): void {
     if (resultado.status === 'salvo') {
-      this.estadoInterno.update((estado) => ({ ...estado, salvamento: 'salvo', mensagemSalvar: null }));
+      this.estadoInterno.update((estado) => ({
+        ...estado,
+        pontosLevar: resultado.pontos,
+        salvamento: 'salvo',
+        mensagemSalvar: null,
+      }));
       return;
     }
     if (resultado.status === 'falha') {
@@ -335,6 +371,19 @@ export class JogoService {
       erro: mensagem,
     }));
   }
+}
+
+function resultadoApi(motivo: MotivoFim): ResultadoPartida {
+  if (motivo === 'vitoria') {
+    return 'VITORIA';
+  }
+  if (motivo === 'parada') {
+    return 'PARADA';
+  }
+  if (motivo === 'esgotou') {
+    return 'ESGOTOU';
+  }
+  return 'ERRO';
 }
 
 function esperar(ms: number): Promise<void> {

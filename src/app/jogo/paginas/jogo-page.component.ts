@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ROTULO_FILTRO, formatarPontos } from '../../compartilhado/apresentacao';
+import { ROTULO_FILTRO, ROTULO_MODALIDADE, ROTULO_NIVEL, formatarPontos } from '../../compartilhado/apresentacao';
 import { SessaoStore } from '../../core/auth/sessao.store';
-import { isFiltroTestamento } from '../../core/modelos/quiz.modelos';
+import { isFiltroTestamento, isModalidade, isNivel } from '../../core/modelos/quiz.modelos';
 import { CartaPerguntaComponent } from '../componentes/carta-pergunta.component';
 import { EscadaPremiosComponent } from '../componentes/escada-premios.component';
 import { PainelAjudasComponent } from '../componentes/painel-ajudas.component';
@@ -34,6 +34,8 @@ export class JogoPageComponent implements OnInit {
   readonly confirmarParada = signal(false);
   readonly formatar = formatarPontos;
   readonly rotuloFiltro = ROTULO_FILTRO;
+  readonly rotuloModalidade = ROTULO_MODALIDADE;
+  readonly rotuloNivel = ROTULO_NIVEL;
   readonly pontosDoNivel = pontosDoNivel;
   readonly trilha = computed(() => {
     const jogo = this.estado();
@@ -58,9 +60,13 @@ export class JogoPageComponent implements OnInit {
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
     const filtro = params.get('testamento');
+    const modalidadeInformada = params.get('modalidade');
+    const nivelInformado = params.get('nivel');
     const rodada = params.get('rodada');
     const estado = this.estado();
-    if (!isFiltroTestamento(filtro)) {
+    const modalidade = isModalidade(modalidadeInformada) ? modalidadeInformada : 'CLASSICO';
+    const nivel = isNivel(nivelInformado) ? nivelInformado : null;
+    if (!isFiltroTestamento(filtro) || (modalidade === 'NIVEL' && !nivel)) {
       if (estado.fase === 'ociosa') {
         void this.router.navigateByUrl('/');
       }
@@ -69,7 +75,7 @@ export class JogoPageComponent implements OnInit {
     if (estado.fase !== 'ociosa' && estado.rodada === rodada) {
       return;
     }
-    void this.jogo.iniciar(filtro, rodada);
+    void this.jogo.iniciar(filtro, modalidade, nivel, rodada);
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -140,14 +146,21 @@ export class JogoPageComponent implements OnInit {
 
   jogarDeNovo(): void {
     const filtro = this.estado().filtro ?? 'AMBOS';
+    const modalidade = this.estado().modalidade ?? 'CLASSICO';
+    const nivel = this.estado().nivel;
     const rodada = Date.now().toString();
     this.escadaAberta.set(false);
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { testamento: filtro, rodada },
+      queryParams: {
+        testamento: filtro,
+        modalidade,
+        nivel: modalidade === 'NIVEL' ? nivel : null,
+        rodada,
+      },
       replaceUrl: true,
     });
-    void this.jogo.iniciar(filtro, rodada);
+    void this.jogo.iniciar(filtro, modalidade, nivel, rodada);
   }
 
   tentarSalvar(): void {

@@ -1,7 +1,8 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { Sessao } from '../modelos/quiz.modelos';
 
-const CHAVE = 'milhao.sessao';
+const CHAVE = 'bereia.sessao';
+const CHAVE_ANTIGA = 'milhao.sessao';
 
 @Injectable({ providedIn: 'root' })
 export class SessaoStore {
@@ -9,7 +10,9 @@ export class SessaoStore {
 
   readonly atual = this.sessao.asReadonly();
   readonly autenticado = computed(() => sessaoValida(this.sessao()));
-  readonly nome = computed(() => (this.autenticado() ? this.sessao()?.nome ?? '' : ''));
+  readonly administrador = computed(() => this.autenticado() && this.sessao()?.role === 'ADMIN');
+  readonly usuarioId = computed(() => (this.autenticado() ? this.sessao()?.usuarioId ?? null : null));
+  readonly nome = computed(() => nomeExibicao(this.autenticado() ? this.sessao() : null));
 
   constructor() {
     if (this.sessao() && !sessaoValida(this.sessao())) {
@@ -31,6 +34,7 @@ export class SessaoStore {
     if (!armazenamento) {
       return sessao;
     }
+    armazenamento.removeItem(CHAVE_ANTIGA);
     if (sessao) {
       armazenamento.setItem(CHAVE, JSON.stringify(sessao));
     } else {
@@ -38,6 +42,17 @@ export class SessaoStore {
     }
     return sessao;
   }
+}
+
+function nomeExibicao(sessao: Sessao | null): string {
+  if (!sessao) {
+    return '';
+  }
+  const nome = sessao.nome.trim();
+  if (!nome || nome.toLowerCase() === sessao.email.trim().toLowerCase() || nome.includes('@')) {
+    return '';
+  }
+  return nome;
 }
 
 function sessaoValida(sessao: Sessao | null): sessao is Sessao {
@@ -49,13 +64,20 @@ function lerSessao(): Sessao | null {
   if (!armazenamento) {
     return null;
   }
-  const bruto = armazenamento.getItem(CHAVE);
+  const bruto = armazenamento.getItem(CHAVE) ?? armazenamento.getItem(CHAVE_ANTIGA);
   if (!bruto) {
     return null;
   }
   try {
     const sessao = JSON.parse(bruto) as Sessao;
-    return sessao?.token ? sessao : null;
+    if (!sessao?.token) {
+      return null;
+    }
+    if (!armazenamento.getItem(CHAVE)) {
+      armazenamento.setItem(CHAVE, JSON.stringify(sessao));
+      armazenamento.removeItem(CHAVE_ANTIGA);
+    }
+    return sessao;
   } catch {
     return null;
   }

@@ -1,0 +1,83 @@
+<section class="mx-auto w-full max-w-5xl px-4 py-8 sm:py-12">
+  <p class="text-sm text-gold">Administração</p>
+  <h1 class="mt-2 font-display text-4xl text-gold">Usuários</h1>
+  <p class="mt-2 text-sm text-parchment/70">
+    Administradores não entram no ranking. Ninguém altera o próprio perfil por esta tela.
+  </p>
+
+  <form class="filtros" (ngSubmit)="pesquisar()">
+    <label class="campo">
+      <span>Pesquisar</span>
+      <input type="search" [ngModel]="busca()" (ngModelChange)="busca.set($event)" name="busca" placeholder="Nome ou e-mail" />
+    </label>
+    <div class="filtro-acoes">
+      <button class="botao-ouro botao-compacto" type="submit">Buscar</button>
+    </div>
+  </form>
+
+  @if (erro() && !selecionado()) {
+    <p class="mt-4 text-sm text-alerta" role="alert">{{ erro() }}</p>
+  }
+  @if (carregando()) {
+    <p class="mt-6 text-parchment/70" role="status">Buscando os cadastros...</p>
+  } @else if (usuarios().length === 0) {
+    <p class="mt-6 text-parchment/75">Nenhum usuário encontrado.</p>
+  } @else {
+    <ul class="mt-6 flex flex-col gap-3">
+      @for (usuario of usuarios(); track usuario.id) {
+        <li class="painel usuario-card">
+          <div class="min-w-0">
+            <p class="font-medium">{{ usuario.nome }}</p>
+            <p class="truncate text-sm text-parchment/65">{{ usuario.email }}</p>
+            <p class="mt-1 text-sm text-parchment/70">
+              {{ rotuloPapel[usuario.role] }} · {{ usuario.ativo ? 'Ativo' : 'Inativo' }} · {{ formatarData(usuario.criadoEm) }}
+            </p>
+          </div>
+          <button type="button" class="botao-fantasma botao-compacto" (click)="abrir(usuario)">Ver</button>
+        </li>
+      }
+    </ul>
+    <div class="mt-4 flex items-center justify-between gap-3">
+      <button type="button" class="botao-fantasma botao-compacto" [disabled]="pagina() <= 1" (click)="ir(pagina() - 1)">Anterior</button>
+      <span class="text-sm text-parchment/70">{{ pagina() }} de {{ totalPaginas() }}</span>
+      <button type="button" class="botao-fantasma botao-compacto" [disabled]="pagina() >= totalPaginas()" (click)="ir(pagina() + 1)">Próxima</button>
+    </div>
+  }
+</section>
+
+@if (selecionado(); as usuario) {
+  <div class="sheet" (click)="fechar()">
+    <div class="sheet-card max-w-lg" role="dialog" aria-modal="true" aria-labelledby="titulo-usuario" (click)="$event.stopPropagation()">
+      <h2 id="titulo-usuario" class="font-display text-2xl text-gold">{{ usuario.nome }}</h2>
+      <dl class="detalhe-lista">
+        <div><dt>E-mail</dt><dd>{{ usuario.email }}</dd></div>
+        <div><dt>Cadastro</dt><dd>{{ formatarData(usuario.criadoEm) }}</dd></div>
+        <div><dt>Perfil</dt><dd>{{ rotuloPapel[usuario.role] }}</dd></div>
+        <div><dt>Situação</dt><dd>{{ usuario.ativo ? 'Ativo' : 'Inativo' }}</dd></div>
+      </dl>
+      @if (usuario.id === meuId()) {
+        <p class="mt-4 text-sm text-parchment/75">Você não pode alterar o próprio perfil.</p>
+      } @else {
+        <div class="mt-5 flex flex-col gap-3 sm:flex-row">
+          @if (usuario.role === 'ADMIN') {
+            <button type="button" class="botao-fantasma" [disabled]="agindo()" (click)="mudarPapel('USER')">Tornar jogador</button>
+          } @else {
+            <button type="button" class="botao-ouro" [disabled]="agindo()" (click)="mudarPapel('ADMIN')">Tornar administrador</button>
+          }
+          @if (usuario.ativo) {
+            <button type="button" class="botao-fantasma" [disabled]="agindo()" (click)="mudarSituacao(false)">Desativar</button>
+          } @else {
+            <button type="button" class="botao-ouro" [disabled]="agindo()" (click)="mudarSituacao(true)">Ativar</button>
+          }
+        </div>
+      }
+      @if (aviso()) {
+        <p class="mt-4 text-sm text-gold" role="status">{{ aviso() }}</p>
+      }
+      @if (erro()) {
+        <p class="mt-4 text-sm text-alerta" role="alert">{{ erro() }}</p>
+      }
+      <button type="button" class="botao-fantasma mt-5" (click)="fechar()">Fechar</button>
+    </div>
+  </div>
+}

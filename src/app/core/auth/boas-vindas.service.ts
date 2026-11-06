@@ -8,8 +8,12 @@ export class BoasVindasService {
   readonly mensagem = this.texto.asReadonly();
 
   mostrar(nome: string): void {
-    const primeiro = nome.trim().split(/\s+/)[0];
-    this.texto.set(primeiro || 'você');
+    const limpo = nome.trim();
+    if (!limpo || limpo.includes('@')) {
+      this.texto.set(null);
+      return;
+    }
+    this.texto.set(limpo);
     if (this.timer) {
       clearTimeout(this.timer);
     }

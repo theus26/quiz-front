@@ -1,22 +1,76 @@
-<section class="mx-auto w-full max-w-3xl px-4 py-8 sm:py-12">
-  <p class="text-sm text-gold">Suas partidas</p>
+<section class="mx-auto w-full max-w-4xl px-4 py-8 sm:py-12">
+  <p class="text-sm text-gold">{{ administrador() ? 'Partidas da igreja' : 'Suas partidas' }}</p>
   <h1 class="mt-2 font-display text-4xl text-gold">Histórico</h1>
 
+  <form class="filtros" (ngSubmit)="carregar()">
+    <label class="campo">
+      <span>Testamento</span>
+      <select [ngModel]="testamento()" (ngModelChange)="testamento.set($event)" name="testamento">
+        <option value="">Todos</option>
+        <option value="ANTIGO">Antigo Testamento</option>
+        <option value="NOVO">Novo Testamento</option>
+        <option value="AMBOS">Bíblia toda</option>
+      </select>
+    </label>
+    <label class="campo">
+      <span>Modalidade</span>
+      <select [ngModel]="modalidade()" (ngModelChange)="modalidade.set($event)" name="modalidade">
+        <option value="">Todas</option>
+        <option value="CLASSICO">Clássico</option>
+        <option value="RAPIDO">Desafio rápido</option>
+        <option value="NIVEL">Desafio por nível</option>
+      </select>
+    </label>
+    <label class="campo">
+      <span>Resultado</span>
+      <select [ngModel]="resultado()" (ngModelChange)="resultado.set($event)" name="resultado">
+        <option value="">Todos</option>
+        <option value="VITORIA">Vitória</option>
+        <option value="ERRO">Errou</option>
+        <option value="PARADA">Parou</option>
+        <option value="ESGOTOU">Perguntas esgotadas</option>
+      </select>
+    </label>
+    @if (administrador()) {
+      <label class="campo">
+        <span>Jogador</span>
+        <input type="search" [ngModel]="busca()" (ngModelChange)="busca.set($event)" name="busca" placeholder="Nome" />
+      </label>
+    }
+    <div class="filtro-acoes">
+      <button class="botao-ouro botao-compacto" type="submit">Filtrar</button>
+      <button class="botao-fantasma botao-compacto" type="button" (click)="limpar()">Limpar</button>
+    </div>
+  </form>
+
   @if (carregando()) {
-    <p class="mt-8 text-parchment/70" role="status">Reunindo suas jornadas...</p>
+    <p class="mt-8 text-parchment/70" role="status">Reunindo as jornadas...</p>
   } @else if (erro()) {
     <p class="mt-8 text-alerta" role="alert">{{ erro() }}</p>
   } @else if (partidas().length === 0) {
-    <p class="mt-8 text-parchment/75">Você ainda não registrou uma partida.</p>
+    <p class="mt-8 text-parchment/75">Nenhuma partida encontrada com esses filtros.</p>
   } @else {
-    <ul class="mt-8 flex flex-col gap-3">
+    <ul class="mt-6 flex flex-col gap-3">
       @for (partida of partidas(); track partida.id) {
-        <li class="painel flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p class="font-medium">{{ rotuloFiltro[partida.filtroTestamento] }}</p>
-            <p class="text-sm text-parchment/65">{{ formatarData(partida.finalizadaEm) }} · {{ partida.acertos }} acertos</p>
+        <li class="painel partida-card">
+          <div class="min-w-0">
+            <p class="font-medium">{{ partida.nome }}</p>
+            <p class="text-sm text-parchment/65">{{ formatarData(partida.finalizadaEm) }}</p>
+            <p class="mt-2 text-sm text-parchment/80">
+              {{ rotuloModalidade[partida.modalidade] }}
+              @if (partida.nivel) {
+                · {{ rotuloNivel[partida.nivel] }}
+              }
+              · {{ rotuloFiltro[partida.filtroTestamento] }}
+            </p>
+            <p class="mt-1 text-sm text-parchment/70">
+              {{ partida.respondidas }} respondidas · {{ partida.acertos }} acertos · {{ partida.erros }} erros
+            </p>
           </div>
-          <p class="font-display text-xl text-gold">{{ formatar(partida.pontos) }}</p>
+          <div class="partida-resultado">
+            <span class="selo">{{ rotuloResultado[partida.resultado] }}</span>
+            <p class="font-display text-xl text-gold">{{ formatar(partida.pontos) }}</p>
+          </div>
         </li>
       }
     </ul>

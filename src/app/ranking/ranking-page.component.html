@@ -1,20 +1,103 @@
-<section class="mx-auto w-full max-w-3xl px-4 py-8 sm:py-12">
-  <p class="text-sm text-gold">Maiores pontuações</p>
+<section class="mx-auto w-full max-w-5xl px-4 py-8 sm:py-12">
+  <p class="text-sm text-gold">Classificação dos jogadores</p>
   <h1 class="mt-2 font-display text-4xl text-gold">Ranking</h1>
-  <p class="mt-2 text-sm text-parchment/70">A melhor pontuação de cada jogador.</p>
+  <p class="mt-2 max-w-2xl text-sm text-parchment/70">
+    A pontuação é a soma das partidas. Administradores acompanham a lista e não entram nela.
+  </p>
 
   @if (carregando()) {
     <p class="mt-8 text-parchment/70" role="status">Abrindo o livro dos nomes...</p>
   } @else if (erro()) {
     <p class="mt-8 text-alerta" role="alert">{{ erro() }}</p>
-  } @else if (ranking().length === 0) {
-    <p class="mt-8 text-parchment/75">Ninguém registrou uma partida ainda.</p>
+  } @else if (classificacao().length === 0) {
+    <p class="mt-8 text-parchment/75">Nenhum jogador registrou uma partida ainda.</p>
   } @else {
+    @if (pessoal(); as eu) {
+      <article class="painel meu-lugar">
+        <p class="text-sm text-gold">Seu lugar</p>
+        <p class="mt-2 text-lg text-parchment">{{ eu.mensagem }}</p>
+        <dl class="meu-grade">
+          @if (eu.elegivel && eu.posicao) {
+            <div><dt>Posição</dt><dd>{{ eu.posicao }}º</dd></div>
+          }
+          <div><dt>Pontos</dt><dd>{{ formatar(eu.pontos) }}</dd></div>
+          <div><dt>Partidas</dt><dd>{{ eu.partidas }}</dd></div>
+          <div><dt>Recorde</dt><dd>{{ formatar(eu.recorde) }}</dd></div>
+          <div><dt>Acertos</dt><dd>{{ formatarTaxa(eu.taxaAcerto) }}</dd></div>
+          <div><dt>Sequência</dt><dd>{{ eu.sequenciaAtual }}</dd></div>
+        </dl>
+        @if (eu.elegivel && eu.nomeAcima) {
+          <p class="mt-3 text-sm text-parchment/75">
+            Imediatamente acima: {{ eu.nomeAcima }}.
+            @if (eu.faltamParaProximo != null && eu.faltamParaProximo > 0) {
+              Faltam {{ formatar(eu.faltamParaProximo) }} pontos.
+            }
+          </p>
+        }
+        @if (textoEvolucao(eu.evolucao, eu.partidas); as evolucao) {
+          <p class="mt-2 text-sm text-parchment/75">{{ evolucao }}</p>
+        }
+        @if (eu.conquistas.length > 0) {
+          <ul class="conquistas">
+            @for (conquista of eu.conquistas; track conquista) {
+              <li>{{ conquista }}</li>
+            }
+          </ul>
+        }
+      </article>
+    } @else if (!autenticado()) {
+      <p class="painel mt-6 text-sm text-parchment/80">
+        <a class="text-gold" routerLink="/entrar" [queryParams]="{ retorno: '/ranking' }">Entre</a>
+        para ver sua posição, a distância até o próximo e suas conquistas.
+      </p>
+    }
+
+    <div class="podio" aria-label="Três primeiros">
+      @if (segundo(); as item) {
+        <article class="podio-lugar podio-2">
+          <span class="medalha" aria-hidden="true">2</span>
+          <span class="monograma">{{ iniciais(item.nome) }}</span>
+          <h2>{{ item.nome }}</h2>
+          <p>{{ formatar(item.pontos) }} pts</p>
+          <small>{{ formatarTaxa(item.taxaAcerto) }} de acerto</small>
+        </article>
+      }
+      @if (primeiro(); as item) {
+        <article class="podio-lugar podio-1">
+          <span class="medalha" aria-hidden="true">1</span>
+          <span class="monograma">{{ iniciais(item.nome) }}</span>
+          <h2>{{ item.nome }}</h2>
+          <p>{{ formatar(item.pontos) }} pts</p>
+          <small>{{ item.partidas }} partidas · {{ formatarTaxa(item.taxaAcerto) }}</small>
+        </article>
+      }
+      @if (terceiro(); as item) {
+        <article class="podio-lugar podio-3">
+          <span class="medalha" aria-hidden="true">3</span>
+          <span class="monograma">{{ iniciais(item.nome) }}</span>
+          <h2>{{ item.nome }}</h2>
+          <p>{{ formatar(item.pontos) }} pts</p>
+          <small>{{ formatarTaxa(item.taxaAcerto) }} de acerto</small>
+        </article>
+      }
+    </div>
+
     <ol class="mt-8 flex flex-col gap-2">
-      @for (item of ranking(); track item.usuarioId) {
-        <li class="ranking-card" [class.ranking-ouro]="item.posicao === 1" [class.ranking-prata]="item.posicao === 2" [class.ranking-bronze]="item.posicao === 3">
+      @for (item of classificacao(); track item.usuarioId) {
+        <li
+          class="ranking-card ranking-rico"
+          [class.ranking-ouro]="item.posicao === 1"
+          [class.ranking-prata]="item.posicao === 2"
+          [class.ranking-bronze]="item.posicao === 3"
+          [class.ranking-eu]="item.usuarioId === meuId()">
           <span class="ranking-posicao">{{ item.posicao }}</span>
-          <span class="truncate font-medium">{{ item.nome }}</span>
+          <span class="monograma monograma-lista">{{ iniciais(item.nome) }}</span>
+          <span class="min-w-0">
+            <span class="block truncate font-medium">{{ item.nome }}</span>
+            <span class="block truncate text-xs text-parchment/60">
+              {{ item.partidas }} partidas · {{ formatarTaxa(item.taxaAcerto) }} de acerto
+            </span>
+          </span>
           <span class="text-gold">{{ formatar(item.pontos) }}</span>
         </li>
       }

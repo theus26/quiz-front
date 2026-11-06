@@ -1,0 +1,117 @@
+<section class="mx-auto w-full max-w-5xl px-4 py-8 sm:py-12">
+  <p class="text-sm text-gold">Administração</p>
+  <h1 class="mt-2 font-display text-4xl text-gold">Perguntas</h1>
+
+  @if (painel(); as painel) {
+    <div class="contadores">
+      <button type="button" class="contador" [class.contador-ativo]="status() === 'PENDENTE'" (click)="filtrar('PENDENTE')">
+        <strong>{{ painel.pendentes }}</strong>
+        <span>Pendentes</span>
+      </button>
+      <button type="button" class="contador" [class.contador-ativo]="status() === 'APROVADA'" (click)="filtrar('APROVADA')">
+        <strong>{{ painel.aprovadas }}</strong>
+        <span>Aprovadas</span>
+      </button>
+      <button type="button" class="contador" [class.contador-ativo]="status() === 'REJEITADA'" (click)="filtrar('REJEITADA')">
+        <strong>{{ painel.rejeitadas }}</strong>
+        <span>Rejeitadas</span>
+      </button>
+    </div>
+  }
+
+  <form class="filtros" (ngSubmit)="pesquisar()">
+    <label class="campo">
+      <span>Buscar nesta lista</span>
+      <input type="search" [ngModel]="busca()" (ngModelChange)="busca.set($event)" name="busca" placeholder="Enunciado, autor ou categoria" />
+    </label>
+    <div class="filtro-acoes">
+      <button class="botao-ouro botao-compacto" type="submit">Buscar</button>
+    </div>
+  </form>
+
+  @if (aviso()) {
+    <p class="mt-4 text-sm text-gold" role="status">{{ aviso() }}</p>
+  }
+  @if (erro() && !detalhe()) {
+    <p class="mt-4 text-sm text-alerta" role="alert">{{ erro() }}</p>
+  }
+  @if (carregando()) {
+    <p class="mt-6 text-parchment/70" role="status">Separando as perguntas...</p>
+  } @else if (!painel()?.perguntas?.length) {
+    <p class="mt-6 text-parchment/75">Nenhuma pergunta nesta situação.</p>
+  } @else {
+    <ul class="mt-6 flex flex-col gap-3">
+      @for (pergunta of painel()?.perguntas ?? []; track pergunta.id) {
+        <li class="painel usuario-card">
+          <div class="min-w-0">
+            <p>{{ pergunta.enunciado }}</p>
+            <p class="mt-1 text-sm text-parchment/65">
+              {{ pergunta.autorNome }} · {{ formatarData(pergunta.criadaEm) }}
+              · {{ rotuloNivel[pergunta.nivel] }}
+              @if (pergunta.categoria) {
+                · {{ pergunta.categoria }}
+              }
+            </p>
+          </div>
+          <button type="button" class="botao-fantasma botao-compacto" (click)="abrir(pergunta.id)">Ver</button>
+        </li>
+      }
+    </ul>
+  }
+</section>
+
+@if (detalhe(); as pergunta) {
+  <div class="sheet" (click)="fechar()">
+    <div class="sheet-card max-w-2xl" role="dialog" aria-modal="true" aria-labelledby="titulo-pergunta" (click)="$event.stopPropagation()">
+      <p class="text-sm text-gold">{{ rotuloStatus[pergunta.status] }} · {{ pergunta.autorNome }}</p>
+      <h2 id="titulo-pergunta" class="mt-2 font-display text-2xl text-parchment">{{ pergunta.enunciado }}</h2>
+      <p class="mt-2 text-sm text-parchment/70">
+        {{ rotuloNivel[pergunta.nivel] }}
+        @if (pergunta.categoria) {
+          · {{ pergunta.categoria }}
+        }
+        @if (pergunta.referencia) {
+          · {{ pergunta.referencia }}
+        }
+      </p>
+      <ol class="mt-4 flex flex-col gap-2">
+        @for (alternativa of pergunta.alternativas; track alternativa.id; let indice = $index) {
+          <li class="alternativa-revisao" [class.alternativa-correta]="alternativa.correta">
+            <span>{{ letra(indice) }}</span>
+            <span>{{ alternativa.texto }}</span>
+            @if (alternativa.correta) {
+              <strong>Correta</strong>
+            }
+          </li>
+        }
+      </ol>
+      @if (pergunta.explicacao) {
+        <p class="mt-4 text-sm text-parchment/80">{{ pergunta.explicacao }}</p>
+      }
+      @if (pergunta.motivoRejeicao) {
+        <p class="mt-3 text-sm text-alerta">Motivo: {{ pergunta.motivoRejeicao }}</p>
+      }
+      @if (pergunta.revisorNome) {
+        <p class="mt-2 text-xs text-parchment/55">
+          {{ pergunta.revisorNome }}
+          @if (pergunta.revisadaEm) {
+            · {{ formatarData(pergunta.revisadaEm) }}
+          }
+        </p>
+      }
+
+      <label class="campo">
+        <span>Motivo da rejeição</span>
+        <textarea [ngModel]="motivo()" (ngModelChange)="motivo.set($event)" name="motivo" rows="3" maxlength="500"></textarea>
+      </label>
+      @if (erro()) {
+        <p class="mt-3 text-sm text-alerta" role="alert">{{ erro() }}</p>
+      }
+      <div class="mt-5 flex flex-col gap-3 sm:flex-row">
+        <button type="button" class="botao-ouro" [disabled]="agindo()" (click)="aprovar()">Aprovar</button>
+        <button type="button" class="botao-fantasma" [disabled]="agindo()" (click)="rejeitar()">Rejeitar</button>
+        <button type="button" class="botao-fantasma" (click)="fechar()">Fechar</button>
+      </div>
+    </div>
+  </div>
+}

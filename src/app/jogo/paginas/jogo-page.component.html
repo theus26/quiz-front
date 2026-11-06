@@ -21,7 +21,11 @@
       <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p class="text-xs uppercase tracking-[0.22em] text-gold/80">
-            {{ jogo.filtro ? rotuloFiltro[jogo.filtro] : 'Quiz' }}
+            {{ jogo.modalidade ? rotuloModalidade[jogo.modalidade] : 'Bereia' }}
+            · {{ jogo.filtro ? rotuloFiltro[jogo.filtro] : 'Quiz' }}
+            @if (jogo.modalidade === 'NIVEL' && jogo.nivel) {
+              · {{ rotuloNivel[jogo.nivel] }}
+            }
           </p>
           <p class="font-display text-2xl text-parchment sm:text-3xl" aria-live="polite">
             {{ formatar(jogo.pontos) }} pontos
@@ -41,6 +45,7 @@
             [pulos]="jogo.pulosRestantes"
             [referenciaDisponivel]="jogo.referenciaDisponivel"
             [revelacaoDisponivel]="jogo.revelacaoDisponivel"
+            [mostrarRevelacao]="jogo.revelacaoPermitida"
             [travado]="travado()"
             (pular)="pular()"
             (referencia)="referencia()"
