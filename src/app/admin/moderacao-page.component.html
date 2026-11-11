@@ -36,7 +36,7 @@
     <p class="mt-4 text-sm text-alerta" role="alert">{{ erro() }}</p>
   }
   @if (carregando()) {
-    <p class="mt-6 text-parchment/70" role="status">Separando as perguntas...</p>
+    <p class="mt-6 text-parchment/70" role="status">Carregando...</p>
   } @else if (!painel()?.perguntas?.length) {
     <p class="mt-6 text-parchment/75">Nenhuma pergunta nesta situação.</p>
   } @else {
@@ -61,53 +61,55 @@
 </section>
 
 @if (detalhe(); as pergunta) {
-  <div class="sheet" (click)="fechar()">
-    <div class="sheet-card max-w-2xl" role="dialog" aria-modal="true" aria-labelledby="titulo-pergunta" (click)="$event.stopPropagation()">
-      <p class="text-sm text-gold">{{ rotuloStatus[pergunta.status] }} · {{ pergunta.autorNome }}</p>
-      <h2 id="titulo-pergunta" class="mt-2 font-display text-2xl text-parchment">{{ pergunta.enunciado }}</h2>
-      <p class="mt-2 text-sm text-parchment/70">
-        {{ rotuloNivel[pergunta.nivel] }}
-        @if (pergunta.categoria) {
-          · {{ pergunta.categoria }}
-        }
-        @if (pergunta.referencia) {
-          · {{ pergunta.referencia }}
-        }
-      </p>
-      <ol class="mt-4 flex flex-col gap-2">
-        @for (alternativa of pergunta.alternativas; track alternativa.id; let indice = $index) {
-          <li class="alternativa-revisao" [class.alternativa-correta]="alternativa.correta">
-            <span>{{ letra(indice) }}</span>
-            <span>{{ alternativa.texto }}</span>
-            @if (alternativa.correta) {
-              <strong>Correta</strong>
-            }
-          </li>
-        }
-      </ol>
-      @if (pergunta.explicacao) {
-        <p class="mt-4 text-sm text-parchment/80">{{ pergunta.explicacao }}</p>
-      }
-      @if (pergunta.motivoRejeicao) {
-        <p class="mt-3 text-sm text-alerta">Motivo: {{ pergunta.motivoRejeicao }}</p>
-      }
-      @if (pergunta.revisorNome) {
-        <p class="mt-2 text-xs text-parchment/55">
-          {{ pergunta.revisorNome }}
-          @if (pergunta.revisadaEm) {
-            · {{ formatarData(pergunta.revisadaEm) }}
+  <div class="sheet sheet-centro" (click)="fechar()">
+    <div class="sheet-card dialogo" role="dialog" aria-modal="true" aria-labelledby="titulo-pergunta" (click)="$event.stopPropagation()">
+      <div class="dialogo-corpo">
+        <p class="text-sm text-gold">{{ rotuloStatus[pergunta.status] }} · {{ pergunta.autorNome }}</p>
+        <h2 id="titulo-pergunta" class="mt-2 font-display text-2xl text-parchment">{{ pergunta.enunciado }}</h2>
+        <p class="mt-2 text-sm text-parchment/70">
+          {{ rotuloNivel[pergunta.nivel] }}
+          @if (pergunta.categoria) {
+            · {{ pergunta.categoria }}
+          }
+          @if (pergunta.referencia) {
+            · {{ pergunta.referencia }}
           }
         </p>
-      }
+        <ol class="mt-4 flex flex-col gap-2">
+          @for (alternativa of pergunta.alternativas; track alternativa.id; let indice = $index) {
+            <li class="alternativa-revisao" [class.alternativa-correta]="alternativa.correta">
+              <span class="letra">{{ letra(indice) }}</span>
+              <span class="min-w-0">{{ alternativa.texto }}</span>
+              @if (alternativa.correta) {
+                <strong class="selo">Correta</strong>
+              }
+            </li>
+          }
+        </ol>
+        @if (pergunta.explicacao) {
+          <p class="mt-4 text-sm text-parchment/80">{{ pergunta.explicacao }}</p>
+        }
+        @if (pergunta.motivoRejeicao) {
+          <p class="mt-3 text-sm text-alerta">Motivo: {{ pergunta.motivoRejeicao }}</p>
+        }
+        @if (pergunta.revisorNome) {
+          <p class="mt-2 text-xs text-parchment/55">
+            {{ pergunta.revisorNome }}
+            @if (pergunta.revisadaEm) {
+              · {{ formatarData(pergunta.revisadaEm) }}
+            }
+          </p>
+        }
 
-      <label class="campo">
-        <span>Motivo da rejeição</span>
-        <textarea [ngModel]="motivo()" (ngModelChange)="motivo.set($event)" name="motivo" rows="3" maxlength="500"></textarea>
-      </label>
-      @if (erro()) {
-        <p class="mt-3 text-sm text-alerta" role="alert">{{ erro() }}</p>
-      }
-      <div class="mt-5 flex flex-col gap-3 sm:flex-row">
+        <label class="campo">
+          <span>Motivo da rejeição</span>
+          <textarea [ngModel]="motivo()" (ngModelChange)="motivo.set($event)" name="motivo" rows="3" maxlength="500"></textarea>
+        </label>
+        @if (erro()) {
+          <p class="mt-3 text-sm text-alerta" role="alert">{{ erro() }}</p>
+        }
+      </div>
+      <div class="dialogo-acoes">
         <button type="button" class="botao-ouro" [disabled]="agindo()" (click)="aprovar()">Aprovar</button>
         <button type="button" class="botao-fantasma" [disabled]="agindo()" (click)="rejeitar()">Rejeitar</button>
         <button type="button" class="botao-fantasma" (click)="fechar()">Fechar</button>

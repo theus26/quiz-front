@@ -23,6 +23,7 @@ export class LoginPageComponent {
 
   readonly enviando = signal(false);
   readonly erro = signal<string | null>(null);
+  readonly senhaVisivel = signal(false);
   readonly formulario = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     senha: ['', [Validators.required]],

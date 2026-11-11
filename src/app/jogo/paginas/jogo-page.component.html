@@ -3,14 +3,13 @@
     @if (jogo.fase === 'carregando') {
       <div class="carregando" role="status">
         <span class="lampada" aria-hidden="true"></span>
-        <p class="font-display text-xl text-gold">Abrindo as Escrituras</p>
-        <p class="text-sm text-parchment/70">Separando as perguntas.</p>
+        <p class="font-display text-xl text-gold">Carregando</p>
       </div>
     }
 
     @if (jogo.fase === 'ociosa' && jogo.erro) {
       <div class="painel-centro">
-        <h1 class="font-display text-3xl text-gold">A jornada não começou</h1>
+        <h1 class="font-display text-3xl text-gold">A partida não começou</h1>
         <p class="mt-3 text-parchment/80">{{ jogo.erro }}</p>
         <a class="botao-ouro mt-6" routerLink="/">Escolher de novo</a>
       </div>
@@ -66,7 +65,7 @@
           }
 
           @if (jogo.consultando || jogo.fase === 'conferindo') {
-            <p class="text-center text-sm text-gold" role="status">Consultando as Escrituras...</p>
+            <p class="text-center text-sm text-gold" role="status">Conferindo...</p>
           }
           @if (jogo.erro) {
             <p class="text-center text-sm text-alerta" role="alert">{{ jogo.erro }}</p>

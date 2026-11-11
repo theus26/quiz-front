@@ -60,8 +60,8 @@ export class InicioPageComponent {
     {
       filtro: 'AMBOS',
       titulo: 'Bíblia toda',
-      texto: 'Os dois testamentos na mesma jornada.',
-      detalhe: 'A escritura completa',
+      texto: 'Perguntas dos dois testamentos.',
+      detalhe: 'Antigo e Novo',
     },
   ];
 
@@ -70,19 +70,19 @@ export class InicioPageComponent {
       id: 'CLASSICO',
       titulo: 'Clássico',
       texto: 'Sete fáceis, cinco médias e cinco difíceis. Três pulos, referência e revelar.',
-      detalhe: 'A jornada completa',
+      detalhe: '17 perguntas',
     },
     {
       id: 'RAPIDO',
       titulo: 'Desafio rápido',
       texto: 'Seis perguntas, um pulo e a referência. A resposta não é revelada.',
-      detalhe: 'Uma rodada curta',
+      detalhe: 'Rodada curta',
     },
     {
       id: 'NIVEL',
       titulo: 'Desafio por nível',
       texto: 'Oito perguntas fáceis ou médias, ou seis difíceis. Dois pulos e as duas ajudas.',
-      detalhe: 'Você escolhe a dificuldade',
+      detalhe: 'Escolha a dificuldade',
     },
   ];
 

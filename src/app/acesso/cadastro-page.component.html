@@ -1,39 +1,79 @@
-<section class="mx-auto flex min-h-[70dvh] w-full max-w-md items-center px-4 py-10">
-  <form class="painel w-full" [formGroup]="formulario" (ngSubmit)="enviar()">
-    <p class="text-sm text-gold">Bereia</p>
-    <h1 class="mt-2 font-display text-3xl text-gold">Criar conta</h1>
-    <p class="mt-2 text-sm text-parchment/70">Com uma conta, a pontuação da partida entra no ranking.</p>
+<section class="acesso">
+  <div class="acesso-arte">
+    <a class="acesso-marca" routerLink="/" aria-label="Bereia, início">
+      <img src="/logo-iasd.svg" alt="" />
+      <span>Bereia</span>
+    </a>
+    <img class="acesso-ilustracao" src="/cadastro-bereia.jpg" alt="" />
+  </div>
+  <div class="acesso-form">
+    <form class="acesso-card" [formGroup]="formulario" (ngSubmit)="enviar()">
+      <a class="acesso-marca acesso-marca-movel" routerLink="/" aria-label="Bereia, início">
+        <img src="/logo-iasd.svg" alt="" />
+        <span>Bereia</span>
+      </a>
+      <h1 class="acesso-titulo">Crie sua conta</h1>
+      <p class="acesso-subtitulo">Com a conta, sua pontuação entra no ranking.</p>
 
-    <label class="campo">
-      <span>Nome</span>
-      <input type="text" formControlName="nome" autocomplete="name" maxlength="120" />
-    </label>
-    <label class="campo">
-      <span>E-mail</span>
-      <input type="email" formControlName="email" autocomplete="email" />
-    </label>
-    <label class="campo">
-      <span>Senha</span>
-      <input type="password" formControlName="senha" autocomplete="new-password" />
-    </label>
-    <label class="campo">
-      <span>Confirmar senha</span>
-      <input type="password" formControlName="confirmar" autocomplete="new-password" />
-    </label>
+      <label class="campo">
+        <span>Nome</span>
+        <input type="text" formControlName="nome" autocomplete="name" maxlength="120" />
+      </label>
+      <label class="campo">
+        <span>E-mail</span>
+        <input type="email" formControlName="email" autocomplete="email" />
+      </label>
+      <label class="campo">
+        <span>Senha</span>
+        <span class="campo-senha">
+          <input [type]="senhaVisivel() ? 'text' : 'password'" formControlName="senha" autocomplete="new-password" />
+          <button
+            type="button"
+            class="ver-senha"
+            (click)="senhaVisivel.set(!senhaVisivel())"
+            [attr.aria-pressed]="senhaVisivel()"
+            [attr.aria-label]="senhaVisivel() ? 'Ocultar senha' : 'Mostrar senha'">
+            @if (senhaVisivel()) {
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.2-.9M9.9 5.2A11 11 0 0 1 12 5c5 0 9.3 3.1 11 7.5a12 12 0 0 1-4.2 5.2M6.1 6.6A12 12 0 0 0 1 12.5C2.7 16.9 7 20 12 20a11 11 0 0 0 3.1-.5" /></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12.5C2.7 8.1 7 5 12 5s9.3 3.1 11 7.5C21.3 16.9 17 20 12 20S2.7 16.9 1 12.5Z" /><circle cx="12" cy="12.5" r="3" /></svg>
+            }
+          </button>
+        </span>
+      </label>
+      <label class="campo">
+        <span>Confirmar senha</span>
+        <span class="campo-senha">
+          <input [type]="confirmarVisivel() ? 'text' : 'password'" formControlName="confirmar" autocomplete="new-password" />
+          <button
+            type="button"
+            class="ver-senha"
+            (click)="confirmarVisivel.set(!confirmarVisivel())"
+            [attr.aria-pressed]="confirmarVisivel()"
+            [attr.aria-label]="confirmarVisivel() ? 'Ocultar senha' : 'Mostrar senha'">
+            @if (confirmarVisivel()) {
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.2-.9M9.9 5.2A11 11 0 0 1 12 5c5 0 9.3 3.1 11 7.5a12 12 0 0 1-4.2 5.2M6.1 6.6A12 12 0 0 0 1 12.5C2.7 16.9 7 20 12 20a11 11 0 0 0 3.1-.5" /></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12.5C2.7 8.1 7 5 12 5s9.3 3.1 11 7.5C21.3 16.9 17 20 12 20S2.7 16.9 1 12.5Z" /><circle cx="12" cy="12.5" r="3" /></svg>
+            }
+          </button>
+        </span>
+      </label>
 
-    @if (formulario.hasError('senhas') && formulario.controls.confirmar.touched) {
-      <p class="text-sm text-alerta">As senhas não conferem.</p>
-    }
-    @if (erro()) {
-      <p class="text-sm text-alerta" role="alert">{{ erro() }}</p>
-    }
+      @if (formulario.hasError('senhas') && formulario.controls.confirmar.touched) {
+        <p class="mt-3 text-sm text-alerta">As senhas não conferem.</p>
+      }
+      @if (erro()) {
+        <p class="mt-3 text-sm text-alerta" role="alert">{{ erro() }}</p>
+      }
 
-    <button class="botao-ouro mt-2 w-full" type="submit" [disabled]="enviando()">
-      {{ enviando() ? 'Criando...' : 'Criar conta e entrar' }}
-    </button>
-    <p class="text-center text-sm text-parchment/70">
-      Já tem conta?
-      <a class="text-gold" routerLink="/entrar" [queryParams]="{ retorno: destino() }">Entrar</a>
-    </p>
-  </form>
+      <button class="botao-ouro mt-4 w-full" type="submit" [disabled]="enviando()">
+        {{ enviando() ? 'Criando...' : 'Criar conta' }}
+      </button>
+      <p class="acesso-troca">
+        Já tem conta?
+        <a routerLink="/entrar" [queryParams]="{ retorno: destino() }">Entrar</a>
+      </p>
+    </form>
+  </div>
 </section>

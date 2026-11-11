@@ -1,6 +1,5 @@
 <section class="mx-auto w-full max-w-4xl px-4 py-8 sm:py-12">
-  <p class="text-sm text-gold">{{ administrador() ? 'Partidas da igreja' : 'Suas partidas' }}</p>
-  <h1 class="mt-2 font-display text-4xl text-gold">Histórico</h1>
+  <h1 class="font-display text-4xl text-gold">Histórico</h1>
 
   <form class="filtros" (ngSubmit)="carregar()">
     <label class="campo">
@@ -44,7 +43,7 @@
   </form>
 
   @if (carregando()) {
-    <p class="mt-8 text-parchment/70" role="status">Reunindo as jornadas...</p>
+    <p class="mt-8 text-parchment/70" role="status">Carregando...</p>
   } @else if (erro()) {
     <p class="mt-8 text-alerta" role="alert">{{ erro() }}</p>
   } @else if (partidas().length === 0) {

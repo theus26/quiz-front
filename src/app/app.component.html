@@ -1,33 +1,73 @@
-<div class="santuario">
-  <header class="topo">
-    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-3 py-2 sm:px-4">
-      <a routerLink="/" class="marca-link">
+<div class="santuario" [class.santuario-acesso]="emAcesso()">
+  @if (!emAcesso()) {
+    <aside class="menu">
+      <a [routerLink]="administrador() ? '/ranking' : '/'" class="marca-link">
         <img src="/logo-iasd.svg" alt="Igreja Adventista do Sétimo Dia" />
         <span class="nome-jogo">Bereia</span>
       </a>
-      <nav class="nav-desktop" aria-label="Principal">
-        <a class="nav-link" routerLink="/" routerLinkActive="nav-ativa" [routerLinkActiveOptions]="{ exact: true }">Início</a>
-        <a class="nav-link" routerLink="/ranking" routerLinkActive="nav-ativa">Ranking</a>
-        @if (autenticado()) {
-          <a class="nav-link" routerLink="/historico" routerLinkActive="nav-ativa">Histórico</a>
-          <a class="nav-link" routerLink="/enviar" routerLinkActive="nav-ativa">Enviar</a>
-          @if (administrador()) {
-            <a class="nav-link" routerLink="/admin/perguntas" routerLinkActive="nav-ativa">Perguntas</a>
-            <a class="nav-link" routerLink="/admin/usuarios" routerLinkActive="nav-ativa">Usuários</a>
-          }
-          <span class="hidden max-w-32 truncate lg:inline">{{ nome() }}</span>
-          <button type="button" class="nav-link" (click)="sair()">Sair</button>
-        } @else {
-          <a class="nav-link" routerLink="/entrar" routerLinkActive="nav-ativa">Entrar</a>
-          <a class="botao-ouro botao-compacto" routerLink="/cadastro">Criar conta</a>
+      <nav class="menu-lista" aria-label="Principal">
+        @if (!administrador()) {
+          <a class="menu-link" routerLink="/" routerLinkActive="nav-ativa" [routerLinkActiveOptions]="{ exact: true }">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z" /></svg>
+            Início
+          </a>
+        }
+        <a class="menu-link" routerLink="/ranking" routerLinkActive="nav-ativa">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V10M12 20V4M17 20v-7" /></svg>
+          Ranking
+        </a>
+        @if (administrador()) {
+          <a class="menu-link" routerLink="/admin/perguntas" routerLinkActive="nav-ativa">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7h8M8 12h8M8 17h5M6 4h12v16H6z" /></svg>
+            Perguntas
+          </a>
+          <a class="menu-link" routerLink="/admin/usuarios" routerLinkActive="nav-ativa">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3zM3 19a5 5 0 0 1 10 0M13 19a5 5 0 0 1 8 0" /></svg>
+            Usuários
+          </a>
+        } @else if (autenticado()) {
+          <a class="menu-link" routerLink="/historico" routerLinkActive="nav-ativa">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h12v15H6zM9 9h6M9 13h6" /></svg>
+            Histórico
+          </a>
+          <a class="menu-link" routerLink="/enviar" routerLinkActive="nav-ativa">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>
+            Enviar pergunta
+          </a>
         }
       </nav>
-    </div>
+    </aside>
+  }
+
+  <div class="casco-corpo">
+  @if (!emAcesso()) {
+  <header class="topo">
+    <a [routerLink]="administrador() ? '/ranking' : '/'" class="marca-link marca-mobile">
+      <img src="/logo-iasd.svg" alt="Igreja Adventista do Sétimo Dia" />
+      <span class="nome-jogo">Bereia</span>
+    </a>
+    <nav class="barra" aria-label="Conta">
+      @if (autenticado()) {
+        <span class="quem">
+          <span class="avatar" [attr.title]="nome()">{{ iniciais() }}</span>
+          @if (nome()) {
+            <span class="quem-nome">{{ nome() }}</span>
+          }
+        </span>
+        <button type="button" class="icone-barra" (click)="sair()" title="Sair" aria-label="Sair">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 7V5h9v14h-9v-2M4 12h11M12 8l4 4-4 4" /></svg>
+        </button>
+      } @else {
+        <a class="botao-fantasma botao-compacto" routerLink="/entrar">Entrar</a>
+        <a class="botao-ouro botao-compacto" routerLink="/cadastro">Criar conta</a>
+      }
+    </nav>
   </header>
+  }
 
   @if (boasVindas(); as nome) {
     <div class="boas-vindas" role="status">
-      <p>Olá, {{ nome }}! Seja bem-vindo de volta!</p>
+      <p>Olá, {{ nome }}.</p>
       <button type="button" (click)="fecharBoasVindas()">Fechar</button>
     </div>
   }
@@ -36,11 +76,30 @@
     <router-outlet />
   </main>
 
+  @if (!emAcesso()) {
   <footer class="rodape">
-    <p>Bereia · Feito por Matheus Felipe</p>
+    <p>Bereia</p>
   </footer>
 
   <nav class="nav-mobile" aria-label="Atalhos">
+    @if (administrador()) {
+      <a routerLink="/ranking" routerLinkActive="nav-ativa" (click)="fecharMais()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V10M12 20V4M17 20v-7" /></svg>
+        Ranking
+      </a>
+      <a routerLink="/admin/perguntas" routerLinkActive="nav-ativa" (click)="fecharMais()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7h8M8 12h8M8 17h5M6 4h12v16H6z" /></svg>
+        Perguntas
+      </a>
+      <a routerLink="/admin/usuarios" routerLinkActive="nav-ativa" (click)="fecharMais()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3zM3 19a5 5 0 0 1 10 0M13 19a5 5 0 0 1 8 0" /></svg>
+        Usuários
+      </a>
+      <button type="button" (click)="sair()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 7V5h9v14h-9v-2M4 12h11M12 8l4 4-4 4" /></svg>
+        Sair
+      </button>
+    } @else {
     <a routerLink="/" routerLinkActive="nav-ativa" [routerLinkActiveOptions]="{ exact: true }" (click)="fecharMais()">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z" /></svg>
       Início
@@ -72,12 +131,15 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14" /></svg>
       Mais
     </button>
+    }
   </nav>
 
   @if (maisAberto()) {
     <div class="sheet" (click)="fecharMais()">
       <div class="sheet-card mais-card" (click)="$event.stopPropagation()" role="dialog" aria-label="Mais opções">
-        <a class="mais-link" routerLink="/" (click)="fecharMais()">Início</a>
+        @if (!administrador()) {
+          <a class="mais-link" routerLink="/" (click)="fecharMais()">Início</a>
+        }
         @if (administrador()) {
           <a class="mais-link" routerLink="/admin/perguntas" (click)="fecharMais()">Perguntas</a>
           <a class="mais-link" routerLink="/admin/usuarios" (click)="fecharMais()">Usuários</a>
@@ -91,4 +153,6 @@
       </div>
     </div>
   }
+  }
+  </div>
 </div>

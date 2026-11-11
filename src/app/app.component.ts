@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal, untracked } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
+import { iniciais as iniciaisDe } from './compartilhado/apresentacao';
 import { BoasVindasService } from './core/auth/boas-vindas.service';
 import { SessaoStore } from './core/auth/sessao.store';
 import { JogoService } from './jogo/servicos/jogo.service';
@@ -21,8 +23,12 @@ export class AppComponent {
   readonly nome = this.sessao.nome;
   readonly boasVindas = this.aviso.mensagem;
   readonly maisAberto = signal(false);
+  readonly emAcesso = signal(false);
 
   constructor() {
+    const marcarAcesso = () => this.emAcesso.set(this.rotaDeAcesso(this.router.url));
+    marcarAcesso();
+    this.router.events.pipe(filter((evento) => evento instanceof NavigationEnd)).subscribe(marcarAcesso);
     effect(() => {
       if (!this.sessao.autenticado()) {
         return;
@@ -46,5 +52,14 @@ export class AppComponent {
 
   fecharBoasVindas(): void {
     this.aviso.fechar();
+  }
+
+  iniciais(): string {
+    return iniciaisDe(this.nome() ?? '');
+  }
+
+  private rotaDeAcesso(url: string): boolean {
+    const caminho = url.split('?')[0];
+    return caminho === '/entrar' || caminho === '/cadastro';
   }
 }

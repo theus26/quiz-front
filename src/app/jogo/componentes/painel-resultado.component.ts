@@ -26,26 +26,13 @@ export class PainelResultadoComponent {
   titulo(): string {
     switch (this.motivo()) {
       case 'vitoria':
-        return 'Você concluiu a partida';
+        return 'Partida concluída';
       case 'erro':
-        return 'A jornada parou aqui';
+        return 'Resposta errada';
       case 'parada':
-        return 'Pontuação guardada';
+        return 'Você parou a partida';
       case 'esgotou':
-        return 'As perguntas acabaram';
-    }
-  }
-
-  verso(): string {
-    switch (this.motivo()) {
-      case 'vitoria':
-        return 'Bem, servo bom e fiel.';
-      case 'erro':
-        return 'Ainda há tempo de recomeçar.';
-      case 'parada':
-        return 'A prudência também é sabedoria.';
-      case 'esgotou':
-        return 'Você caminhou até onde as Escrituras desta noite alcançaram.';
+        return 'Acabaram as perguntas';
     }
   }
 }

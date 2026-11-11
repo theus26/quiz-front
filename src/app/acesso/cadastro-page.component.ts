@@ -23,6 +23,8 @@ export class CadastroPageComponent {
 
   readonly enviando = signal(false);
   readonly erro = signal<string | null>(null);
+  readonly senhaVisivel = signal(false);
+  readonly confirmarVisivel = signal(false);
   readonly formulario = this.fb.nonNullable.group({
     nome: ['', [Validators.required, Validators.maxLength(120)]],
     email: ['', [Validators.required, Validators.email]],

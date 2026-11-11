@@ -1,6 +1,5 @@
 <div class="resultado-pano" role="dialog" aria-modal="true" aria-labelledby="titulo-resultado">
   <section class="resultado surgir" [class.resultado-vitoria]="motivo() === 'vitoria'" [class.resultado-erro]="motivo() === 'erro'">
-    <p class="resultado-verso">{{ verso() }}</p>
     <h2 id="titulo-resultado" class="font-display text-3xl text-gold sm:text-4xl">{{ titulo() }}</h2>
     <p class="resultado-pontos">
       <strong>{{ formatar(pontos()) }}</strong>
@@ -21,7 +20,7 @@
           <p>Partida registrada no seu histórico.</p>
         }
         @case ('visitante') {
-          <p>Você jogou sem conta. Entre para gravar esta pontuação no ranking.</p>
+          <p>Entre para salvar esta pontuação no ranking.</p>
         }
         @case ('falha') {
           <p>{{ mensagemSalvar() }}</p>

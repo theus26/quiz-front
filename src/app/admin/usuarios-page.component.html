@@ -2,7 +2,7 @@
   <p class="text-sm text-gold">Administração</p>
   <h1 class="mt-2 font-display text-4xl text-gold">Usuários</h1>
   <p class="mt-2 text-sm text-parchment/70">
-    Administradores não entram no ranking. Ninguém altera o próprio perfil por esta tela.
+    Administradores ficam de fora do ranking.
   </p>
 
   <form class="filtros" (ngSubmit)="pesquisar()">
@@ -19,7 +19,7 @@
     <p class="mt-4 text-sm text-alerta" role="alert">{{ erro() }}</p>
   }
   @if (carregando()) {
-    <p class="mt-6 text-parchment/70" role="status">Buscando os cadastros...</p>
+    <p class="mt-6 text-parchment/70" role="status">Carregando...</p>
   } @else if (usuarios().length === 0) {
     <p class="mt-6 text-parchment/75">Nenhum usuário encontrado.</p>
   } @else {

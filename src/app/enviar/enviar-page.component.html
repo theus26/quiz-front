@@ -1,101 +1,111 @@
-<section class="mx-auto w-full max-w-3xl px-4 py-8 sm:py-12">
-  <p class="text-sm text-gold">Contribua com o banco</p>
-  <h1 class="mt-2 font-display text-4xl text-gold">Enviar pergunta</h1>
-  <p class="mt-2 text-sm text-parchment/70">
-    A pergunta fica pendente até um administrador aprovar. Só então ela pode aparecer nas partidas.
+<section class="mx-auto w-full max-w-6xl px-4 py-8 sm:py-12">
+  <h1 class="font-display text-4xl text-gold">Enviar pergunta</h1>
+  <p class="mt-2 max-w-2xl text-sm text-parchment/70">
+    Ela fica pendente até um administrador aprovar.
   </p>
 
-  <form class="painel mt-6" [formGroup]="formulario" (ngSubmit)="enviar()">
-    <label class="campo">
-      <span>Enunciado</span>
-      <textarea formControlName="enunciado" rows="3" maxlength="500"></textarea>
-    </label>
-    <div class="grid gap-3 sm:grid-cols-2">
+  <div class="enviar-grade">
+    <form class="painel" [formGroup]="formulario" (ngSubmit)="enviar()">
+      <h2 class="enviar-titulo">A pergunta</h2>
       <label class="campo">
-        <span>Testamento</span>
-        <select formControlName="testamento">
-          <option value="ANTIGO">Antigo Testamento</option>
-          <option value="NOVO">Novo Testamento</option>
-        </select>
+        <span>Enunciado</span>
+        <textarea formControlName="enunciado" rows="3" maxlength="500" placeholder="Escreva a pergunta como ela deve aparecer na partida"></textarea>
       </label>
-      <label class="campo">
-        <span>Dificuldade</span>
-        <select formControlName="nivel">
-          <option value="FACIL">Fácil</option>
-          <option value="MEDIO">Médio</option>
-          <option value="DIFICIL">Difícil</option>
-        </select>
-      </label>
-    </div>
-    <label class="campo">
-      <span>Categoria</span>
-      <select formControlName="categoria">
-        <option value="">Escolha um tema</option>
-        @for (categoria of categorias; track categoria) {
-          <option [value]="categoria">{{ categoria }}</option>
-        }
-      </select>
-    </label>
-    <label class="campo">
-      <span>Referência bíblica</span>
-      <input type="text" formControlName="referencia" maxlength="120" placeholder="Opcional. Ex.: João 3:16" />
-    </label>
-    <label class="campo">
-      <span>Explicação</span>
-      <textarea formControlName="explicacao" rows="2" maxlength="500" placeholder="Opcional"></textarea>
-    </label>
-
-    <fieldset class="mt-4">
-      <legend class="text-sm text-parchment/80">Alternativas. Marque a correta.</legend>
-      <div formArrayName="alternativas" class="mt-2 flex flex-col gap-3">
-        @for (controle of formulario.controls.alternativas.controls; track $index) {
-          <label class="alternativa-envio">
-            <input
-              type="radio"
-              name="correta"
-              [attr.aria-label]="'Marcar alternativa ' + ($index + 1) + ' como correta'"
-              [checked]="correta() === $index"
-              (change)="correta.set($index)" />
-            <input type="text" [formControl]="controle" maxlength="255" [attr.placeholder]="'Alternativa ' + ($index + 1)" />
-          </label>
-        }
+      <div class="grid gap-3 sm:grid-cols-2">
+        <label class="campo">
+          <span>Testamento</span>
+          <select formControlName="testamento">
+            <option value="ANTIGO">Antigo Testamento</option>
+            <option value="NOVO">Novo Testamento</option>
+          </select>
+        </label>
+        <label class="campo">
+          <span>Dificuldade</span>
+          <select formControlName="nivel">
+            <option value="FACIL">Fácil</option>
+            <option value="MEDIO">Médio</option>
+            <option value="DIFICIL">Difícil</option>
+          </select>
+        </label>
       </div>
-    </fieldset>
+      <label class="campo">
+        <span>Categoria</span>
+        <select formControlName="categoria">
+          <option value="">Escolha um tema</option>
+          @for (categoria of categorias; track categoria) {
+            <option [value]="categoria">{{ categoria }}</option>
+          }
+        </select>
+      </label>
+      <label class="campo">
+        <span>Referência bíblica</span>
+        <input type="text" formControlName="referencia" maxlength="120" placeholder="Opcional. Ex.: João 3:16" />
+      </label>
+      <label class="campo">
+        <span>Explicação</span>
+        <textarea formControlName="explicacao" rows="2" maxlength="500" placeholder="Opcional. Aparece depois da resposta."></textarea>
+      </label>
 
-    @if (erro()) {
-      <p class="mt-4 text-sm text-alerta" role="alert">{{ erro() }}</p>
-    }
-    @if (sucesso()) {
-      <p class="mt-4 text-sm text-gold" role="status">{{ sucesso() }}</p>
-    }
+      <div class="enviar-bloco">
+        <h2 class="enviar-titulo">Alternativas</h2>
+        <p class="enviar-dica">Escreva quatro respostas e toque na letra da correta.</p>
+        <div formArrayName="alternativas" class="mt-3 flex flex-col gap-3">
+          @for (controle of formulario.controls.alternativas.controls; track $index) {
+            <div class="opcao-envio" [class.opcao-marcada]="correta() === $index">
+              <input
+                type="radio"
+                name="correta"
+                [id]="'correta-' + $index"
+                [attr.aria-label]="'Marcar alternativa ' + letra($index) + ' como correta'"
+                [checked]="correta() === $index"
+                (change)="correta.set($index)" />
+              <label class="letra" [attr.for]="'correta-' + $index">{{ letra($index) }}</label>
+              <input type="text" [formControl]="controle" maxlength="255" [attr.placeholder]="'Alternativa ' + letra($index)" />
+              @if (correta() === $index) {
+                <strong class="selo">Correta</strong>
+              }
+            </div>
+          }
+        </div>
+      </div>
 
-    <button class="botao-ouro mt-5" type="submit" [disabled]="enviando()">
-      {{ enviando() ? 'Enviando...' : 'Enviar para aprovação' }}
-    </button>
-  </form>
-
-  <h2 class="mt-10 font-display text-2xl text-gold">Suas perguntas</h2>
-  @if (carregando()) {
-    <p class="mt-4 text-sm text-parchment/70" role="status">Buscando o que você enviou...</p>
-  } @else if (minhas().length === 0) {
-    <p class="mt-4 text-sm text-parchment/70">Você ainda não enviou uma pergunta.</p>
-  } @else {
-    <ul class="mt-4 flex flex-col gap-3">
-      @for (pergunta of minhas(); track pergunta.id) {
-        <li class="painel">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <span class="selo">{{ rotuloStatus[pergunta.status] }}</span>
-            <span class="text-xs text-parchment/60">{{ formatarData(pergunta.criadaEm) }}</span>
-          </div>
-          <p class="mt-2">{{ pergunta.enunciado }}</p>
-          <p class="mt-1 text-sm text-parchment/65">
-            {{ rotuloNivel[pergunta.nivel] }}
-            @if (pergunta.categoria) {
-              · {{ pergunta.categoria }}
-            }
-          </p>
-        </li>
+      @if (erro()) {
+        <p class="mt-4 text-sm text-alerta" role="alert">{{ erro() }}</p>
       }
-    </ul>
-  }
+      @if (sucesso()) {
+        <p class="mt-4 text-sm text-gold" role="status">{{ sucesso() }}</p>
+      }
+
+      <button class="botao-ouro mt-5" type="submit" [disabled]="enviando()">
+        {{ enviando() ? 'Enviando...' : 'Enviar para aprovação' }}
+      </button>
+    </form>
+
+    <aside class="painel enviar-lista">
+      <h2 class="enviar-titulo">Suas perguntas</h2>
+      @if (carregando()) {
+        <p class="mt-4 text-sm text-parchment/70" role="status">Carregando...</p>
+      } @else if (minhas().length === 0) {
+        <p class="mt-4 text-sm text-parchment/70">Você ainda não enviou uma pergunta.</p>
+      } @else {
+        <ul class="mt-4 flex flex-col gap-3">
+          @for (pergunta of minhas(); track pergunta.id) {
+            <li class="minha-pergunta">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="selo">{{ rotuloStatus[pergunta.status] }}</span>
+                <span class="text-xs text-parchment/60">{{ formatarData(pergunta.criadaEm) }}</span>
+              </div>
+              <p class="mt-2">{{ pergunta.enunciado }}</p>
+              <p class="mt-1 text-sm text-parchment/65">
+                {{ rotuloNivel[pergunta.nivel] }}
+                @if (pergunta.categoria) {
+                  · {{ pergunta.categoria }}
+                }
+              </p>
+            </li>
+          }
+        </ul>
+      }
+    </aside>
+  </div>
 </section>

@@ -1,14 +1,17 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './core/auth/admin.guard';
 import { authGuard } from './core/auth/auth.guard';
+import { jogadorGuard } from './core/auth/jogador.guard';
 
 export const routes: Routes = [
   {
     path: '',
+    canActivate: [jogadorGuard],
     loadComponent: () => import('./inicio/inicio-page.component').then((m) => m.InicioPageComponent),
   },
   {
     path: 'jogar',
+    canActivate: [jogadorGuard],
     loadComponent: () => import('./jogo/paginas/jogo-page.component').then((m) => m.JogoPageComponent),
   },
   {
